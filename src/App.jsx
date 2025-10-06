@@ -11,7 +11,7 @@ import VisionFuture from './components/VisionFuture';
 import Testimonials from './components/Testimonials';
 import Footer from './pages/Footer';
 import Portfolio from './pages/Portfolio';
-import B2BLeadGeneration from './services/B2B.jsx';
+import B2BLeadGeneration from './Services/b2b.jsx';
 import DataEntryProcessing from './Services/DataEntry';
 import WebMarketResearch from './Services/Web-based';
 import CRMDataManagement from './Services/Crm-management';
