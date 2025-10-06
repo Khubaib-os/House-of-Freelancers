@@ -49,7 +49,7 @@ function App() {
         <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/about" element={<AboutUsPage/>} />
         <Route path="/blogs" element={<Blogs />} />
-        <Route path="/B2B" element={<B2BLeadGeneration />} />
+        <Route path="/b2b" element={<B2BLeadGeneration />} />
         <Route path="/data-entry" element={<DataEntryProcessing />} />
         <Route path="/Web-based" element={<WebMarketResearch />} />
         <Route path="/crm-management" element={<CRMDataManagement />} />
