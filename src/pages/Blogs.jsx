@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../supabase';
 
 const BlogAndNewsPage = () => {
   const [activeCategory, setActiveCategory] = useState('all');
@@ -8,14 +9,52 @@ const BlogAndNewsPage = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const postsPerPage = 6;
 
   const categories = [
-    { id: 'all', label: 'All', count: 3 },
-    { id: 'b2b', label: 'B2B', count: 1 },
-    { id: 'tech', label: 'Tech', count: 1 },
-    { id: 'market', label: 'Market', count: 1 },
+    { id: 'all', label: 'All', count: 0 },
+    { id: 'b2b', label: 'B2B', count: 0 },
+    { id: 'tech', label: 'Tech', count: 0 },
+    { id: 'market', label: 'Market', count: 0 },
   ];
+
+  // Fetch posts from Supabase
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+
+      if (error) throw error;
+      
+      setPosts(data || []);
+      
+      // Update category counts
+      categories.forEach(cat => {
+        if (cat.id === 'all') {
+          cat.count = data?.length || 0;
+        } else {
+          cat.count = data?.filter(post => post.category === cat.id).length || 0;
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      setError('Failed to load posts');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const searchSuggestions = [
     'B2B strategies',
@@ -23,98 +62,12 @@ const BlogAndNewsPage = () => {
     'Market updates',
   ];
 
-  const articles = [
-    {
-      id: 1,
-      title: "Effective B2B Marketing Strategies for 2025",
-      excerpt: "Explore top strategies to boost B2B marketing success.",
-      category: 'b2b',
-      readTime: '6 min read',
-      date: 'Jan 10, 2025',
-      author: {
-        name: 'Jane Doe',
-        role: 'Marketing Expert',
-        bio: 'Jane is a seasoned marketing professional with over 10 years of experience.',
-        image: '👩‍💼'
-      },
-      image: '📈',
-      tags: ['B2B', 'Marketing'],
-      content: `
-        <p>B2B marketing in 2025 requires innovative approaches to stay competitive.</p>
-        <h2>Key Strategies</h2>
-        <ul>
-          <li>Personalized content marketing</li>
-          <li>AI-driven lead generation</li>
-        </ul>
-      `,
-      type: 'article'
-    },
-  ];
-
-  const dailyUpdates = [
-    {
-      id: 101,
-      title: "AI Regulations Update: EU Approves New Framework",
-      excerpt: "The European Union has approved comprehensive AI regulations effective from March 2025.",
-      category: 'tech',
-      readTime: '2 min read',
-      date: 'Jan 15, 2025',
-      timeAgo: '2 hours ago',
-      author: {
-        name: 'Tech News Desk',
-        role: 'Editorial Team',
-        bio: 'Our team provides real-time updates on technology developments.',
-        image: '📰'
-      },
-      image: '⚡',
-      tags: ['AI', 'Regulations'],
-      content: `
-        <p>The new EU AI Act classifies AI systems based on risk levels and mandates compliance for high-risk applications.</p>
-        <ul>
-          <li>Transparency requirements for AI decisions</li>
-          <li>Penalties up to €35 million for non-compliance</li>
-        </ul>
-        <p>Businesses are advised to audit their AI systems immediately.</p>
-      `,
-      type: 'daily-update',
-      breaking: true
-    },
-    {
-      id: 102,
-      title: "Market Surge: Tech Stocks Rise 5% Amid Earnings Season",
-      excerpt: "Major tech companies report strong Q4 earnings, driving market optimism.",
-      category: 'market',
-      readTime: '1 min read',
-      date: 'Jan 14, 2025',
-      timeAgo: '1 day ago',
-      author: {
-        name: 'Market Watch',
-        role: 'Financial Reporter',
-        bio: 'Daily market insights and analysis.',
-        image: '📊'
-      },
-      image: '📈',
-      tags: ['Stocks', 'Earnings'],
-      content: `
-        <p>Tech giants like Apple and Microsoft exceeded earnings expectations, leading to a 5% sector rally.</p>
-        <ul>
-          <li>Apple: +7% after iPhone sales beat estimates</li>
-          <li>Microsoft: Cloud revenue up 25%</li>
-        </ul>
-        <p>Analysts predict continued growth in Q1 2025.</p>
-      `,
-      type: 'daily-update'
-    },
-  ];
-
-  const allContent = [...articles, ...dailyUpdates];
-
-  const filteredPosts = allContent.filter(post => {
-    const matchesTab = activeTab === 'all' || post.type === activeTab;
+  const filteredPosts = posts.filter(post => {
+    const matchesTab = activeTab === 'all' || post.post_type === activeTab;
     const matchesCategory = activeCategory === 'all' || post.category === activeCategory;
     const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+                         (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
     return matchesTab && matchesCategory && matchesSearch;
   });
 
@@ -151,13 +104,85 @@ const BlogAndNewsPage = () => {
     setShowSearchSuggestions(false);
   };
 
+  // Check if string is a URL
+  const isUrl = (str) => {
+    try {
+      new URL(str);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  // Get display content for image
+  const getImageDisplay = (image) => {
+    if (!image) return '📝'; // Default emoji if no image
+    
+    if (isUrl(image)) {
+      return (
+        <img 
+          src={image} 
+          alt="Post" 
+          className="w-full h-full object-cover rounded-lg"
+        />
+      );
+    } else {
+      // If it's an emoji or text
+      return <span className="text-4xl">{image}</span>;
+    }
+  };
+
+  // Get author image display
+  const getAuthorImageDisplay = (image) => {
+    if (!image) return '👤'; // Default emoji if no image
+    
+    if (isUrl(image)) {
+      return (
+        <img 
+          src={image} 
+          alt="Author" 
+          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+        />
+      );
+    } else {
+      return <span className="text-base sm:text-lg">{image}</span>;
+    }
+  };
+
   useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory, activeTab, searchQuery]);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto"></div>
+          <p className="text-gray-600 mt-2">Loading posts...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">{error}</p>
+          <button 
+            onClick={fetchPosts}
+            className="mt-4 bg-yellow-500 text-gray-900 px-4 py-2 rounded-lg hover:bg-yellow-600"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (selectedPost) {
-    const isArticle = selectedPost.type === 'article';
-    const isDailyUpdate = selectedPost.type === 'daily-update';
+    const isArticle = selectedPost.post_type === 'article';
+    const isDailyUpdate = selectedPost.post_type === 'daily-update';
 
     return (
       <div className="min-h-screen bg-gray-50 py-6">
@@ -184,7 +209,7 @@ const BlogAndNewsPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            {isDailyUpdate && selectedPost.breaking && (
+            {isDailyUpdate && selectedPost.is_breaking && (
               <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold mb-4">
                 <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                 Breaking Update
@@ -198,42 +223,51 @@ const BlogAndNewsPage = () => {
             </h1>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-sm text-gray-600 mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-100 rounded-full flex items-center justify-center text-base sm:text-lg">
-                  {selectedPost.author.image}
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-100 rounded-full flex items-center justify-center overflow-hidden">
+                  {getAuthorImageDisplay(selectedPost.author_image)}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-900 text-sm sm:text-base">{selectedPost.author.name}</p>
-                  <p className="text-xs sm:text-sm">{selectedPost.author.role}</p>
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base">{selectedPost.author_name}</p>
+                  <p className="text-xs sm:text-sm">{selectedPost.author_role}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
-                <span>{selectedPost.date}</span>
-                {isDailyUpdate && <span>• {selectedPost.timeAgo}</span>}
+                <span>{new Date(selectedPost.published_at).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric' 
+                })}</span>
+                {isDailyUpdate && selectedPost.time_ago && <span>• {selectedPost.time_ago}</span>}
                 <span>•</span>
-                <span>{selectedPost.readTime}</span>
+                <span>{selectedPost.read_time}</span>
               </div>
             </div>
-            <div className="w-full h-40 sm:h-48 md:h-64 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-lg flex items-center justify-center mb-6">
-              <span className="text-4xl sm:text-5xl">{selectedPost.image}</span>
+            
+            {/* Post Image - FIXED */}
+            <div className="w-full h-40 sm:h-48 md:h-64 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-lg flex items-center justify-center mb-6 overflow-hidden">
+              {getImageDisplay(selectedPost.post_image)}
             </div>
+            
             {isArticle ? (
               <>
                 <div className="prose prose-sm sm:prose-base max-w-none text-gray-700 mb-6">
                   <div dangerouslySetInnerHTML={{ __html: selectedPost.content }} />
                 </div>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {selectedPost.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm hover:bg-yellow-100 hover:text-yellow-700 transition-colors"
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
+                {selectedPost.tags && selectedPost.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {selectedPost.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="bg-gray-100 text-gray-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm hover:bg-yellow-100 hover:text-yellow-700 transition-colors"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">About the Author</h3>
-                  <p className="text-gray-600 text-xs sm:text-sm">{selectedPost.author.bio}</p>
+                  <p className="text-gray-600 text-xs sm:text-sm">{selectedPost.author_bio || 'No bio available'}</p>
                 </div>
               </>
             ) : (
@@ -241,18 +275,20 @@ const BlogAndNewsPage = () => {
                 <div className="prose prose-sm max-w-none text-gray-700 mb-6 bg-white p-4 sm:p-6 rounded-lg shadow-sm">
                   <div dangerouslySetInnerHTML={{ __html: selectedPost.content }} />
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {selectedPost.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="bg-blue-100 text-blue-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                {selectedPost.tags && selectedPost.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedPost.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className="bg-blue-100 text-blue-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <div className="mt-4 text-xs text-gray-500">
-                  <p>Updated {selectedPost.timeAgo} | Source: {selectedPost.author.role}</p>
+                  <p>Updated {selectedPost.time_ago || 'recently'} | Source: {selectedPost.author_role}</p>
                 </div>
               </>
             )}
@@ -395,19 +431,21 @@ const BlogAndNewsPage = () => {
               className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 cursor-pointer"
               onClick={() => handlePostClick(post)}
             >
-              <div className="relative h-32 sm:h-40 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-3xl sm:text-4xl">{post.image}</span>
-                {post.breaking && (
+              {/* Post Image - FIXED */}
+              <div className="relative h-32 sm:h-40 bg-gradient-to-br from-yellow-100 to-amber-100 rounded-lg flex items-center justify-center mb-4 overflow-hidden">
+                {getImageDisplay(post.post_image)}
+                {post.is_breaking && (
                   <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded">
                     Breaking
                   </span>
                 )}
               </div>
+              
               <div className="flex items-center gap-2 mb-2">
                 <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
                   {categories.find(cat => cat.id === post.category)?.label}
                 </span>
-                {post.type === 'daily-update' && (
+                {post.post_type === 'daily-update' && (
                   <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
                     Update
                   </span>
@@ -418,9 +456,13 @@ const BlogAndNewsPage = () => {
               </h2>
               <p className="text-sm text-gray-600 mb-3 line-clamp-3">{post.excerpt}</p>
               <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                <span>{post.date}</span>
-                {post.type === 'daily-update' && <span>{post.timeAgo}</span>}
-                <span>{post.readTime}</span>
+                <span>{new Date(post.published_at).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'short', 
+                  day: 'numeric' 
+                })}</span>
+                {post.post_type === 'daily-update' && post.time_ago && <span>{post.time_ago}</span>}
+                <span>{post.read_time}</span>
               </div>
               <button className="text-yellow-600 hover:text-yellow-700 font-medium text-sm flex items-center gap-1">
                 Read More

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import CustomLink from './CustomLink'; 
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -71,23 +72,24 @@ const Navbar = () => {
           
           {/* Middle - Navigation Links */}
           <div className="hidden md:flex items-center justify-center space-x-1 lg:space-x-2 xl:space-x-3">
-            <Link to="/" onClick={closeAllDropdowns}>
+            {/* Use CustomLink instead of Link */}
+            <CustomLink to="/" onClick={closeAllDropdowns}>
               <motion.span
                 whileTap={{ scale: 0.95 }}
                 className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer"
               >
                 Home
               </motion.span>
-            </Link>
+            </CustomLink>
 
-           <Link to="/portfolio" onClick={closeAllDropdowns}>
+            <CustomLink to="/portfolio" onClick={closeAllDropdowns}>
               <motion.span
                 whileTap={{ scale: 0.95 }}
                 className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer"
               >
                 Portfolio
               </motion.span>
-            </Link>
+            </CustomLink>
 
             
             {/* Services Dropdown */}
@@ -129,7 +131,7 @@ const Navbar = () => {
                     className="absolute z-20 mt-1 w-64 bg-white border border-gray-200 rounded-lg py-3 shadow-xl"
                   >
                     {services.map((item, index) => (
-                      <Link key={item.name} to={item.path} onClick={closeAllDropdowns}>
+                      <CustomLink key={item.name} to={item.path} onClick={closeAllDropdowns}>
                         <motion.span
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
@@ -140,38 +142,38 @@ const Navbar = () => {
                           <span className="w-2 h-2 bg-amber-400 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform duration-200"></span>
                           <span className="truncate group-hover:text-amber-600 transition-colors duration-200">{item.name}</span>
                         </motion.span>
-                      </Link>
+                      </CustomLink>
                     ))}
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            <Link to="/about" onClick={closeAllDropdowns}>
+            <CustomLink to="/about" onClick={closeAllDropdowns}>
               <motion.span
                 whileTap={{ scale: 0.95 }}
                 className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer"
               >
                 About Us
               </motion.span>
-            </Link>
+            </CustomLink>
              
 
-            <Link to="/blogs" onClick={closeAllDropdowns}>
+            <CustomLink to="/blogs" onClick={closeAllDropdowns}>
               <motion.span
                 whileTap={{ scale: 0.95 }}
                 className="text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer"
               >
                 Blogs
               </motion.span>
-            </Link>
+            </CustomLink>
           </div>
 
           
           
           {/* Right Side - Contact Us Button */}
           <div className="hidden md:flex items-center ml-4">
-            <Link to="/contact-us" onClick={closeAllDropdowns}>
+            <CustomLink to="/contact-us" onClick={closeAllDropdowns}>
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 whileHover={{ scale: 1.03, backgroundColor: "#f59e0b" }}
@@ -179,7 +181,7 @@ const Navbar = () => {
               >
                 Contact Us
               </motion.button>
-            </Link>
+            </CustomLink>
           </div>
           
           {/* Mobile menu button */}
@@ -213,41 +215,42 @@ const Navbar = () => {
             className="md:hidden bg-white border-t border-gray-200 w-full"
           >
             <div className="px-2 pt-2 pb-3 space-y-1">
-              <Link to="/" onClick={closeAllDropdowns}>
+              {/* Use CustomLink for mobile navigation */}
+              <CustomLink to="/" onClick={closeAllDropdowns}>
                 <motion.span
                   whileTap={{ scale: 0.98 }}
                   className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 cursor-pointer"
                 >
                   Home
                 </motion.span>
-              </Link>
+              </CustomLink>
 
-              <Link to="/portfolio" onClick={closeAllDropdowns}>
+              <CustomLink to="/portfolio" onClick={closeAllDropdowns}>
                 <motion.span
                   whileTap={{ scale: 0.98 }}
                   className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 cursor-pointer"
                 >
                   Portfolio
                 </motion.span>
-              </Link>
+              </CustomLink>
 
-              <Link to="/blogs" onClick={closeAllDropdowns}>
+              <CustomLink to="/blogs" onClick={closeAllDropdowns}>
                 <motion.span
                   whileTap={{ scale: 0.98 }}
                   className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 cursor-pointer"
                 >
                   Blogs
                 </motion.span>
-              </Link>
+              </CustomLink>
 
-              <Link to="/about" onClick={closeAllDropdowns}>
+              <CustomLink to="/about" onClick={closeAllDropdowns}>
                 <motion.span
                   whileTap={{ scale: 0.98 }}
                   className="block px-4 py-3 rounded-lg text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 cursor-pointer"
                 >
                   About Us
                 </motion.span>
-              </Link>
+              </CustomLink>
               
               {/* Mobile Services Dropdown */}
               <div className="relative">
@@ -282,7 +285,7 @@ const Navbar = () => {
                       className="pl-5 mt-1 space-y-1"
                     >
                       {services.map((item, index) => (
-                        <Link key={item.name} to={item.path} onClick={closeAllDropdowns}>
+                        <CustomLink key={item.name} to={item.path} onClick={closeAllDropdowns}>
                           <motion.span
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -294,21 +297,21 @@ const Navbar = () => {
                               {item.name}
                             </div>
                           </motion.span>
-                        </Link>
+                        </CustomLink>
                       ))}
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
               
-              <Link to="/contact-us" onClick={closeAllDropdowns}>
+              <CustomLink to="/contact-us" onClick={closeAllDropdowns}>
                 <motion.button
                   whileTap={{ scale: 0.98 }}
                   className="w-full text-left px-4 py-3 rounded-lg text-base font-bold text-gray-900 bg-amber-400 hover:bg-amber-500 transition-all duration-200 cursor-pointer border border-amber-300"
                 >
                   Contact Us
                 </motion.button>
-              </Link>
+              </CustomLink>
             </div>
           </motion.div>
         )}

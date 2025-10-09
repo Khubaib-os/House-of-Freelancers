@@ -1,4 +1,4 @@
-// App.jsx
+// App.jsx (updated)
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './pages/Navbar';
@@ -22,17 +22,32 @@ import ProductListing from './Services/ProductListing';
 import ContactUs from './pages/ContactUs';
 import Blogs from './pages/Blogs';
 import AboutUsPage from './pages/About';
+import Login from './dashboard/Login';
+import DashboardLayout from './dashboard/DashboardLayout';
+import ProtectedRoute from './dashboard/ProtectedRoute';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
   const location = useLocation();
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [location.pathname]);
+  // Check if current route is dashboard or login
+  const isDashboardRoute = location.pathname.startsWith('/dashboard') || location.pathname === '/HofLogin';
 
   return (
     <>
-      <Navbar /> 
+      <ScrollToTop />
+      
+      {!isDashboardRoute && <Navbar />}
+      
       <Routes>
         <Route path="/" element={
           <>
@@ -57,11 +72,15 @@ function App() {
         <Route path="/data-conversion" element={<DataConversion />} />
         <Route path="/product-listing" element={<ProductListing />} />
         <Route path="/virtual-assistance" element={<VirtualAssistance />} />
-
+        
+        {/* Dashboard Routes - No Navbar/Footer */}
+        <Route path="/HofLogin" element={<Login />} />
+        <Route path="/dashboard/*" element={<DashboardLayout />} />
       </Routes>
-      <Footer/>
+      
+      {!isDashboardRoute && <Footer/>}
     </>
   )
 }
 
-export default App
+export default App;

@@ -1,53 +1,32 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../supabase';
 
 const TopProjects = () => {
   const [selectedProject, setSelectedProject] = useState(null);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const projects = [
-    {
-      id: 1,
-      title: "E-commerce Data Migration",
-      description: "Migrated 50,000+ product listings with 100% accuracy and improved processing speed by 30% for enhanced platform performance.",
-      category: "Data Management",
-      results: ["50,000+ products migrated", "100% data accuracy", "30% faster processing"]
-    },
-    {
-      id: 2,
-      title: "B2B Lead Generation Campaign",
-      description: "Generated 500+ qualified B2B leads in 30 days with 25% conversion rate and 40% cost reduction in lead acquisition.",
-      category: "Lead Generation",
-      results: ["500+ qualified leads", "25% conversion rate", "40% cost reduction"]
-    },
-    {
-      id: 3,
-      title: "Real Estate Market Analysis",
-      description: "Conducted comprehensive 5-city market analysis with 95% accuracy, identifying 15+ high-value investment opportunities.",
-      category: "Research & Analysis",
-      results: ["5-city analysis", "95% accuracy", "15+ opportunities identified"]
-    },
-    {
-      id: 4,
-      title: "Automated CRM Setup",
-      description: "Implemented CRM automation reducing manual work by 80% with custom workflows and real-time performance dashboards.",
-      category: "Business Automation",
-      results: ["80% manual work reduction", "Custom workflows", "Real-time dashboards"]
-    },
-    {
-      id: 5,
-      title: "Virtual Assistant Support",
-      description: "Provided virtual assistance achieving 99% email response rate and 40% executive time savings through optimized workflows.",
-      category: "Virtual Assistance",
-      results: ["99% email response", "40% time savings", "Optimized workflows"]
-    },
-    {
-      id: 6,
-      title: "Product Listing Optimization",
-      description: "Optimized 10,000+ product listings driving 35% higher click-through rates and improved search rankings.",
-      category: "E-commerce Support",
-      results: ["10,000+ listings", "35% higher CTR", "Improved rankings"]
-    }
-  ];
+  // Fetch projects from Supabase
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setProjects(data || []);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   const openProjectDetails = (project) => {
     setSelectedProject(project);
@@ -56,6 +35,17 @@ const TopProjects = () => {
   const closeProjectDetails = () => {
     setSelectedProject(null);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-16 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-600 mx-auto"></div>
+          <p className="text-gray-600 mt-2">Loading projects...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white py-16">
@@ -91,7 +81,7 @@ const TopProjects = () => {
                 {/* Project Image */}
                 <div className="relative h-48 overflow-hidden">
                   <img 
-                    src="/meeting.jpg" 
+                    src={project.image_url || '/meeting.jpg'} 
                     alt={project.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
@@ -113,14 +103,16 @@ const TopProjects = () => {
                   </p>
                   
                   {/* Results */}
-                  <div className="space-y-2">
-                    {project.results.slice(0, 2).map((result, idx) => (
-                      <div key={idx} className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        <span className="text-xs text-gray-500">{result}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {project.results && project.results.length > 0 && (
+                    <div className="space-y-2">
+                      {project.results.slice(0, 2).map((result, idx) => (
+                        <div key={idx} className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-green-500 rounded-full" />
+                          <span className="text-xs text-gray-500">{result}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* View Button */}
                   <div className="mt-4 pt-4 border-t border-gray-100">
@@ -136,6 +128,23 @@ const TopProjects = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Show message if no projects */}
+        {projects.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-12"
+          >
+            <div className="bg-white rounded-2xl p-8 shadow-lg">
+              <svg className="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Projects Yet</h3>
+              <p className="text-gray-600">Projects will appear here once they are added to the system.</p>
+            </div>
+          </motion.div>
+        )}
 
         {/* CTA Section */}
         <motion.div
@@ -182,7 +191,7 @@ const TopProjects = () => {
               {/* Modal Image */}
               <div className="relative h-64">
                 <img 
-                  src="/meeting.jpg" 
+                  src={selectedProject.image_url || '/meeting.jpg'} 
                   alt={selectedProject.title}
                   className="w-full h-full object-cover"
                 />
@@ -214,17 +223,19 @@ const TopProjects = () => {
                 </p>
 
                 {/* Results */}
-                <div className="bg-gray-50 rounded-xl p-6 mb-8">
-                  <h4 className="text-lg font-semibold text-gray-800 mb-4">Key Achievements</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {selectedProject.results.map((result, idx) => (
-                      <div key={idx} className="flex items-center space-x-3">
-                        <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0" />
-                        <span className="text-gray-700">{result}</span>
-                      </div>
-                    ))}
+                {selectedProject.results && selectedProject.results.length > 0 && (
+                  <div className="bg-gray-50 rounded-xl p-6 mb-8">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-4">Key Achievements</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {selectedProject.results.map((result, idx) => (
+                        <div key={idx} className="flex items-center space-x-3">
+                          <div className="w-3 h-3 bg-green-500 rounded-full flex-shrink-0" />
+                          <span className="text-gray-700">{result}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex gap-4">
