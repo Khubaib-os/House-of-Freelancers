@@ -8,7 +8,12 @@ const CustomLink = ({ to, children, className, onClick, ...props }) => {
   const handleClick = (e) => {
     // If Ctrl key or middle mouse button, let browser handle new tab
     if (e.ctrlKey || e.metaKey || e.button === 1) {
-      return; // Let browser handle naturally for new tab
+      // Let browser handle naturally for new tab
+      e.preventDefault();
+      // Force new tab with full URL
+      const fullUrl = window.location.origin + to;
+      window.open(fullUrl, '_blank');
+      return;
     }
     
     // Prevent default anchor behavior
