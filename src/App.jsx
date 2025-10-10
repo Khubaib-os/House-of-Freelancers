@@ -1,6 +1,6 @@
-// App.jsx (updated)
+// App.jsx (fixed)
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './pages/Navbar';
 import Home from './components/Home';
 import Excellence from './components/Excellence';
@@ -36,7 +36,7 @@ function ScrollToTop() {
   return null;
 }
 
-function AppContent() {
+function App() {
   const location = useLocation();
 
   // Check if current route is dashboard or login
@@ -49,6 +49,7 @@ function AppContent() {
       {!isDashboardRoute && <Navbar />}
       
       <Routes>
+        {/* Main Website Routes */}
         <Route path="/" element={
           <>
             <Home />
@@ -81,7 +82,7 @@ function AppContent() {
           </ProtectedRoute>
         } />
         
-        {/* 404 Page - Add this for better routing */}
+        {/* 404 Page */}
         <Route path="*" element={
           <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="text-center">
@@ -95,14 +96,6 @@ function AppContent() {
       
       {!isDashboardRoute && <Footer/>}
     </>
-  );
-}
-
-function App() {
-  return (
-    <Router>
-      <AppContent />
-    </Router>
   );
 }
 
