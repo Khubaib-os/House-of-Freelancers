@@ -1,6 +1,6 @@
 // App.jsx (updated)
 import React, { useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './pages/Navbar';
 import Home from './components/Home';
 import Excellence from './components/Excellence';
@@ -36,7 +36,7 @@ function ScrollToTop() {
   return null;
 }
 
-function App() {
+function AppContent() {
   const location = useLocation();
 
   // Check if current route is dashboard or login
@@ -75,12 +75,35 @@ function App() {
         
         {/* Dashboard Routes - No Navbar/Footer */}
         <Route path="/HofLogin" element={<Login />} />
-        <Route path="/dashboard/*" element={<DashboardLayout />} />
+        <Route path="/dashboard/*" element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        } />
+        
+        {/* 404 Page - Add this for better routing */}
+        <Route path="*" element={
+          <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
+              <p className="text-gray-600 mb-4">Page not found</p>
+              <a href="/" className="text-yellow-600 hover:text-yellow-700">Go back home</a>
+            </div>
+          </div>
+        } />
       </Routes>
       
       {!isDashboardRoute && <Footer/>}
     </>
-  )
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
 }
 
 export default App;
