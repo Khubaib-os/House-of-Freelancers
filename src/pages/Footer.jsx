@@ -259,18 +259,25 @@ const Footer = () => {
           <p className="text-gray-600 text-sm mb-3 md:mb-0 hover:text-white transition-colors duration-300 cursor-default">
             Copyright © 2024 Company Name. All Right Reserved.
           </p>
-          <div className="flex space-x-4 md:space-x-6">
-            {["Privacy Policy", "Terms & Conditions", "FAQ"].map((item, index) => (
-              <motion.a
-                key={index}
-                href="#"
-                whileHover={{ scale: 1.05, color: "#ffffff" }}
-                className="text-gray-600 hover:text-white text-sm transition-colors duration-300"
-              >
-                {item}
-              </motion.a>
-            ))}
-          </div>
+         <div className="flex space-x-4 md:space-x-6">
+  {[
+    { name: "Privacy Policy", path: "/privacy" },
+    { name: "Terms & Conditions", path: "/terms" },
+    { name: "FAQ", path: "/faq" }
+  ].map((item, index) => (
+    <motion.button
+      key={index}
+      onClick={() => {
+        navigate(item.path);
+        scrollToTop();
+      }}
+      whileHover={{ scale: 1.05 }}
+      className="text-gray-600 hover:text-white text-sm transition-colors duration-300 bg-transparent border-none cursor-pointer"
+    >
+      {item.name}
+    </motion.button>
+  ))}
+</div>
         </div>
       </motion.div>
     </div>

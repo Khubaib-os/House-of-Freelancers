@@ -25,6 +25,9 @@ import AboutUsPage from './pages/About';
 import Login from './dashboard/Login';
 import DashboardLayout from './dashboard/DashboardLayout';
 import ProtectedRoute from './dashboard/ProtectedRoute';
+import Privacy from './pages/Privacy.jsx';
+import Terms from './pages/Terms.jsx';
+import FAQ from './pages/FAQ.jsx';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -73,6 +76,10 @@ function App() {
         <Route path="/data-conversion" element={<DataConversion />} />
         <Route path="/product-listing" element={<ProductListing />} />
         <Route path="/virtual-assistance" element={<VirtualAssistance />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/FAQ" element={<FAQ />} />
+
         
         {/* Dashboard Routes - No Navbar/Footer */}
         <Route path="/HofLogin" element={<Login />} />
